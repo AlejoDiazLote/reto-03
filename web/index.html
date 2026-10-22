@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agente · Órdenes de Compra SAP</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">OC</span>
+        <div>
+          <h1>Órdenes de Compra SAP</h1>
+          <p id="estado" class="muted">Conectando…</p>
+        </div>
+      </div>
+      <button id="nueva" class="ghost" type="button">Nueva sesión</button>
+    </header>
+
+    <main id="chat" aria-live="polite">
+      <section class="bienvenida" id="bienvenida">
+        <h2>¿Qué solicitud procesamos?</h2>
+        <p class="muted">El agente lee el paquete, valida contra los maestros (RC1–RC10), arma la OC, genera la evidencia y la crea en el SAP simulado. Las excepciones te las pregunta.</p>
+        <div class="sugerencias">
+          <button type="button" data-prompt="Procesa la solicitud &quot;sol-001&quot;.">Procesa sol-001</button>
+          <button type="button" data-prompt="Procesa la solicitud &quot;sol-004&quot;. Muéstrame la OC como quedaría en SAP, qué validaciones pasó y cuáles no, y no la crees hasta que yo lo confirme.">sol-004 con confirmación</button>
+          <button type="button" data-prompt="Procesa sol-002 y sol-003 y dime por qué no se pueden crear.">Casos bloqueados</button>
+          <button type="button" data-prompt="Procesa la solicitud sol-005.">OC retroactiva (sol-005)</button>
+          <button type="button" data-prompt="Procesa la solicitud sol-006.">IVA no informado (sol-006)</button>
+        </div>
+      </section>
+    </main>
+
+    <div id="banner" class="banner" hidden>
+      <div>
+        <strong>El agente necesita tu confirmación</strong>
+        <ul id="banner-lista"></ul>
+      </div>
+      <div class="banner-acciones">
+        <button id="confirmar" type="button" class="primary">Confirmo</button>
+        <button id="cancelar" type="button" class="ghost">No, cancelar</button>
+      </div>
+    </div>
+
+    <form id="form" class="composer">
+      <textarea id="entrada" rows="1" placeholder="Escribe, por ejemplo: procesa la solicitud sol-004" autocomplete="off" required></textarea>
+      <button id="enviar" type="submit" class="primary">Enviar</button>
+    </form>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
