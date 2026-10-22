@@ -50,12 +50,24 @@ export function aFormatoOpenAi(m: Mensaje): Record<string, unknown> {
   return m
 }
 
+function detalleProveedor(cuerpo: string): string {
+  try {
+    const json = JSON.parse(cuerpo) as { error?: { message?: unknown } }
+    const mensaje = json.error?.message
+    if (typeof mensaje === "string") return mensaje.slice(0, 300)
+  } catch {
+    return cuerpo.slice(0, 300)
+  }
+  return cuerpo.slice(0, 300)
+}
+
 function errorHttp(status: number, cuerpo: string): LlmError {
-  const resumen = cuerpo.slice(0, 300)
+  const resumen = detalleProveedor(cuerpo)
   if (status === 401 || status === 403) return new LlmError("El proveedor de IA rechazó la credencial configurada en el servidor.", "auth")
   if (status === 429) return new LlmError("El proveedor de IA alcanzó su límite de uso. Espera un minuto e inténtalo de nuevo.", "limite")
+  if (status === 503) return new LlmError(`El modelo no está disponible temporalmente: ${resumen}`, "proveedor")
   if (status === 400 && /tool|function/i.test(resumen)) return new LlmError(`El modelo generó una llamada a herramienta mal formada: ${resumen}`, "proveedor")
-  return new LlmError(`El proveedor de IA respondió con error ${status}.`, "proveedor")
+  return new LlmError(`El proveedor de IA respondió con error ${status}: ${resumen}`, "proveedor")
 }
 
 export class OpenAiCompatibleAdapter implements LlmAdapter {
