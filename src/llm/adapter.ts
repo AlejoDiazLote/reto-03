@@ -30,6 +30,7 @@ export class LlmError extends Error {
   constructor(
     message: string,
     readonly tipo: "timeout" | "limite" | "auth" | "proveedor" | "config",
+    readonly reintentable = false,
   ) {
     super(message)
   }

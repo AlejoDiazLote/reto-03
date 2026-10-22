@@ -20,6 +20,7 @@ const llm: LlmAdapter =
         apiKey: config.apiKey,
         model: config.model,
         timeoutMs: config.timeoutMs,
+        fallbackModels: config.fallbackModels,
       })
 const agente = new Agente({ root, llm, maxIterations: config.maxIterations, maxTokensSession: config.maxTokensSession })
 const sesiones = new AlmacenSesiones(root)

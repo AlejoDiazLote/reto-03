@@ -8,7 +8,13 @@ export type ConfigOpenAiCompatible = {
   model: string
   timeoutMs: number
   temperature?: number
+  fallbackModels?: string[]
+  retries?: number
+  retryDelayMs?: number
 }
+
+const REINTENTABLE = new Set([500, 502, 503, 504])
+const esperar = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
 
 const RespuestaSchema = z.object({
   choices: z
@@ -65,7 +71,7 @@ function errorHttp(status: number, cuerpo: string): LlmError {
   const resumen = detalleProveedor(cuerpo)
   if (status === 401 || status === 403) return new LlmError("El proveedor de IA rechazó la credencial configurada en el servidor.", "auth")
   if (status === 429) return new LlmError("El proveedor de IA alcanzó su límite de uso. Espera un minuto e inténtalo de nuevo.", "limite")
-  if (status === 503) return new LlmError(`El modelo no está disponible temporalmente: ${resumen}`, "proveedor")
+  if (REINTENTABLE.has(status)) return new LlmError(`El modelo no está disponible temporalmente (${status}): ${resumen}`, "proveedor", true)
   if (status === 400 && /tool|function/i.test(resumen)) return new LlmError(`El modelo generó una llamada a herramienta mal formada: ${resumen}`, "proveedor")
   return new LlmError(`El proveedor de IA respondió con error ${status}: ${resumen}`, "proveedor")
 }
@@ -83,9 +89,28 @@ export class OpenAiCompatibleAdapter implements LlmAdapter {
     if (!this.config.apiKey && !/localhost|127\.0\.0\.1/.test(this.config.baseUrl)) {
       throw new LlmError("No hay clave del proveedor de IA configurada en el servidor (LLM_API_KEY).", "config")
     }
+    const modelos = [this.config.model, ...(this.config.fallbackModels ?? []).filter((m) => m !== this.config.model)]
+    const reintentos = this.config.retries ?? 2
+    const espera = this.config.retryDelayMs ?? 1500
+    let ultimo: LlmError | null = null
+    for (const modelo of modelos) {
+      for (let intento = 0; intento <= reintentos; intento++) {
+        try {
+          return await this.enviarModelo(modelo, mensajes, herramientas, opciones)
+        } catch (e) {
+          if (!(e instanceof LlmError) || !e.reintentable) throw e
+          ultimo = e
+          if (intento < reintentos) await esperar(espera * 2 ** intento)
+        }
+      }
+    }
+    throw ultimo ?? new LlmError("El proveedor de IA no está disponible.", "proveedor")
+  }
+
+  private async enviarModelo(modelo: string, mensajes: Mensaje[], herramientas: DefinicionHerramienta[], opciones: OpcionesEnvio): Promise<RespuestaLlm> {
     const usarHerramientas = opciones.herramientasHabilitadas !== false && herramientas.length > 0
     const cuerpo = {
-      model: this.config.model,
+      model: modelo,
       temperature: this.config.temperature ?? 0,
       messages: mensajes.map(aFormatoOpenAi),
       ...(usarHerramientas

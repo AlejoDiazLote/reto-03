@@ -30,6 +30,7 @@ LLM_PROVIDER=offline bun run dev
 | `LLM_BASE_URL` | `https://generativelanguage.googleapis.com/v1beta/openai` | Endpoint compatible con OpenAI de Gemini; puede sustituirse por Groq, OpenRouter u Ollama |
 | `LLM_API_KEY` | — | Clave de Google AI Studio. **Solo en el backend**; nunca se envía al front ni a los logs |
 | `LLM_MODEL` | `gemini-3.8-flash` | Modelo de Gemini con function calling |
+| `LLM_FALLBACK_MODELS` | `gemini-2.5-flash,gemini-2.5-flash-lite` | Modelos que se prueban, en orden, si el principal responde 500/502/503/504 (alta demanda) |
 | `MAX_ITERATIONS` | `25` | Tope de iteraciones herramienta→modelo por turno |
 | `MAX_TOKENS_SESSION` | `200000` | Tope de tokens por sesión |
 | `LLM_TIMEOUT_MS` | `30000` | Timeout de cada llamada al modelo |
