@@ -23,3 +23,4 @@ https://github.com/AlejoDiazLote/reto-03 (público, rama main)
 ## Pendiente
 1. El usuario crea la clave gratuita de Gemini en Google AI Studio y el Blueprint en Render con el secreto `LLM_API_KEY`.
 2. Con la URL de Render: probar health + sol-004 con el LLM real, ajustar el prompt si hace falta y actualizar el link en el README.
+3. Push pendiente: el commit local de Gemini existe, pero GitHub devolvió 403 por una discrepancia de permisos/autenticación para `AlejoDiazLote/reto-03`.
