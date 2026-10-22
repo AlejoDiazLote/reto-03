@@ -7,6 +7,7 @@ COPY src ./src
 COPY web ./web
 COPY fixtures ./fixtures
 ENV NODE_ENV=production PORT=3000
+RUN mkdir -p /app/out && chown -R bun:bun /app/out
 EXPOSE 3000
 USER bun
 CMD ["bun", "src/server.ts"]
