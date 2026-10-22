@@ -2,7 +2,7 @@
 
 El agente lee el paquete de una solicitud de compra (correo, solicitud, cotización, aprobación y factura), lo valida contra los maestros (reglas RC1–RC10), construye el payload de la OC con su trazabilidad, genera la evidencia de aprobación (TXT + PDF + sha256) y crea la OC en un SAP simulado. Las excepciones se las pregunta a la analista antes de crear.
 
-- **Link de prueba:** `https://agente-oc-sap.onrender.com` *(ver la sección "Despliegue"; el plan gratis de Render tarda unos 30 s en despertar)*
+- **Link de prueba:** `https://reto-03-6wt1.onrender.com` *(el plan gratis de Render tarda unos 30 s en despertar)*
 - **Clave de acceso:** ninguna, salvo que se defina `ACCESS_KEY` (en ese caso el chat la pide una vez).
 
 ## Requisitos
