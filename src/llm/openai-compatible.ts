@@ -21,6 +21,7 @@ const RespuestaSchema = z.object({
               z.object({
                 id: z.string(),
                 function: z.object({ name: z.string(), arguments: z.string().nullable().optional() }),
+                extra_content: z.record(z.string(), z.unknown()).optional(),
               }),
             )
             .nullable()
@@ -31,6 +32,23 @@ const RespuestaSchema = z.object({
     .min(1),
   usage: z.object({ prompt_tokens: z.number().optional(), completion_tokens: z.number().optional() }).optional(),
 })
+
+export function aFormatoOpenAi(m: Mensaje): Record<string, unknown> {
+  if (m.role === "assistant" && m.tool_calls && m.tool_calls.length > 0) {
+    return {
+      role: "assistant",
+      content: m.content,
+      tool_calls: m.tool_calls.map((t) => ({
+        id: t.id,
+        type: "function",
+        function: { name: t.name, arguments: t.arguments },
+        ...(t.extra ? { extra_content: t.extra } : {}),
+      })),
+    }
+  }
+  if (m.role === "assistant") return { role: "assistant", content: m.content ?? "" }
+  return m
+}
 
 function errorHttp(status: number, cuerpo: string): LlmError {
   const resumen = cuerpo.slice(0, 300)
@@ -57,7 +75,7 @@ export class OpenAiCompatibleAdapter implements LlmAdapter {
     const cuerpo = {
       model: this.config.model,
       temperature: this.config.temperature ?? 0,
-      messages: mensajes,
+      messages: mensajes.map(aFormatoOpenAi),
       ...(usarHerramientas
         ? { tools: herramientas.map((h) => ({ type: "function", function: h })), tool_choice: "auto", parallel_tool_calls: false }
         : {}),
@@ -91,7 +109,12 @@ export class OpenAiCompatibleAdapter implements LlmAdapter {
     const msg = parsed.data.choices[0]?.message
     return {
       content: msg?.content ?? null,
-      toolCalls: (msg?.tool_calls ?? []).map((t) => ({ id: t.id, name: t.function.name, arguments: t.function.arguments ?? "{}" })),
+      toolCalls: (msg?.tool_calls ?? []).map((t) => ({
+        id: t.id,
+        name: t.function.name,
+        arguments: t.function.arguments ?? "{}",
+        ...(t.extra_content ? { extra: t.extra_content } : {}),
+      })),
       usage: { input: parsed.data.usage?.prompt_tokens ?? 0, output: parsed.data.usage?.completion_tokens ?? 0 },
     }
   }

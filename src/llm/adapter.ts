@@ -1,4 +1,4 @@
-export type ToolCall = { id: string; name: string; arguments: string }
+export type ToolCall = { id: string; name: string; arguments: string; extra?: Record<string, unknown> }
 
 export type Mensaje =
   | { role: "system"; content: string }

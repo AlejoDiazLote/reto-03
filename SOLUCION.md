@@ -13,7 +13,7 @@ flowchart LR
   W[web/ chat HTML+JS] -- POST /api/chat · SSE --> S[src/server.ts]
   S --> L[src/agent/loop.ts<br/>ciclo + confirmación]
   L --> A[src/llm/adapter.ts<br/>LlmAdapter]
-  A --> G[openai-compatible.ts<br/>Groq · Gemini · OpenRouter · Ollama]
+  A --> G[openai-compatible.ts<br/>Gemini · Groq · OpenRouter · Ollama]
   A --> O[offline.ts<br/>guion determinista]
   L --> R[src/agent/registry.ts<br/>zod → JSON Schema]
   R --> T[src/tools/oc.ts]
@@ -63,12 +63,12 @@ Un cambio de reglas de negocio toca `src/domain/rules.ts` y el `.md` de conocimi
 
 ## 4. Elección del modelo
 
-- **Proveedor**: Groq, modelo `llama-3.3-70b-versatile`, a través de un adaptador **compatible con OpenAI** escrito con `fetch`, sin SDK.
+- **Proveedor**: Google Gemini, modelo `gemini-3.8-flash`, a través de su endpoint **compatible con OpenAI** y un adaptador escrito con `fetch`, sin SDK.
 - **Por qué**:
-  - Tiene plan gratuito, que es lo que pidió el usuario.
-  - Su latencia es muy baja (cientos de tokens por segundo), así que un caso completo de 5 herramientas responde en pocos segundos.
-  - Soporta *function calling*.
-- **Flexibilidad**: el mismo adaptador sirve para Gemini, OpenRouter u Ollama cambiando solo `LLM_BASE_URL` y `LLM_MODEL`. El ciclo no se toca.
+  - Google AI Studio permite generar una clave gratuita con una cuenta de Google.
+  - La documentación oficial confirma soporte de `chat/completions` y *function calling* en el endpoint compatible.
+  - Es un modelo Flash de baja latencia para el ciclo de 5 herramientas.
+- **Flexibilidad**: el mismo adaptador sirve para Groq, OpenRouter u Ollama cambiando solo `LLM_BASE_URL` y `LLM_MODEL`. El ciclo no se toca.
 - **Proveedor `offline`**: también implementa `LlmAdapter`. Permite demostrar la UI sin clave y prueba que cambiar de proveedor no afecta el ciclo.
 
 **Costo estimado por caso** (cálculo de orden de magnitud):
@@ -78,8 +78,8 @@ Un cambio de reglas de negocio toca `src/domain/rules.ts` y el `.md` de conocimi
 | Llamadas al modelo por caso | 6 |
 | Tokens de entrada (system prompt + historial creciente + resultados JSON) | ~20 k |
 | Tokens de salida | ~1,5 k |
-| Costo en el plan gratuito | US$ 0 |
-| Costo con la tarifa de pago de Groq para este modelo (US$ 0,59 / 0,79 por M) | ≈ US$ 0,013 por caso |
+| Costo en la cuota gratuita de Google AI Studio | US$ 0 (sujeto a límites del proyecto) |
+| Costo al superar la cuota | Se controla con el tablero de facturación de Google; el límite de tokens por sesión evita gasto no acotado |
 | Costo con un modelo frontera tipo Claude Sonnet o GPT-4.1 | ≈ US$ 0,05–0,08 por caso |
 
 ## 5. Matriz de controles
@@ -229,7 +229,7 @@ Recomendación a la dirección:
   - Evaluar RC3 contra cualquier aprobador del centro: producía bloqueos contradictorios en sol-003.
   - Una redacción de logs que también ocultaba el campo `tokens`: se corrigió para coincidir solo con nombres exactos de secretos.
   - Desplegar en GitHub Pages: no puede ejecutar el backend ni guardar la clave.
-- **Verificación:** todo el código pasó `tsc --noEmit` estricto, 25 pruebas con `bun test` (reglas, herramientas, ciclo del agente con un LLM guionado, sincronía del módulo), ejecuciones repetidas de `demo.ts` y la prueba manual del front.
+- **Verificación:** todo el código pasó `tsc --noEmit` estricto, 25 pruebas con `bun test` (reglas, herramientas, ciclo del agente con un LLM guionado, sincronía del módulo), ejecuciones repetidas de `demo.ts` y la prueba manual del front. Groq fue descartado porque no fue posible crear la cuenta/clave; se configuró Gemini como proveedor principal.
 
 ## 12. Riesgos de producción y mitigación
 

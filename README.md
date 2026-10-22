@@ -12,7 +12,7 @@ El agente lee el paquete de una solicitud de compra (correo, solicitud, cotizaci
 ## Levantar en local (un comando)
 
 ```bash
-cp .env.example .env        # y pon tu LLM_API_KEY (Groq es gratis: https://console.groq.com/keys)
+cp .env.example .env        # y pon tu LLM_API_KEY de Gemini (gratis en Google AI Studio)
 bun install && bun run dev  # http://localhost:3000
 ```
 
@@ -26,10 +26,10 @@ LLM_PROVIDER=offline bun run dev
 
 | Variable | Default | Descripción |
 |---|---|---|
-| `LLM_PROVIDER` | `groq` | Etiqueta del proveedor (`offline` activa el guion determinista sin modelo) |
-| `LLM_BASE_URL` | `https://api.groq.com/openai/v1` | Cualquier endpoint compatible con OpenAI (Groq, Gemini, OpenRouter, Ollama) |
-| `LLM_API_KEY` | — | Clave del proveedor. **Solo en el backend**; nunca se envía al front ni a los logs |
-| `LLM_MODEL` | `llama-3.3-70b-versatile` | Modelo |
+| `LLM_PROVIDER` | `gemini` | Etiqueta del proveedor (`offline` activa el guion determinista sin modelo) |
+| `LLM_BASE_URL` | `https://generativelanguage.googleapis.com/v1beta/openai` | Endpoint compatible con OpenAI de Gemini; puede sustituirse por Groq, OpenRouter u Ollama |
+| `LLM_API_KEY` | — | Clave de Google AI Studio. **Solo en el backend**; nunca se envía al front ni a los logs |
+| `LLM_MODEL` | `gemini-3.8-flash` | Modelo de Gemini con function calling |
 | `MAX_ITERATIONS` | `25` | Tope de iteraciones herramienta→modelo por turno |
 | `MAX_TOKENS_SESSION` | `200000` | Tope de tokens por sesión |
 | `LLM_TIMEOUT_MS` | `30000` | Timeout de cada llamada al modelo |
@@ -96,7 +96,7 @@ Salidas que se generan en `out/`:
 
 1. Sube el repo a GitHub.
 2. En Render, crea un *Blueprint* que use `render.yaml`. Se despliega con el Dockerfile en el plan gratuito.
-3. Define el secreto `LLM_API_KEY` en el panel de Render.
+3. Define el secreto `LLM_API_KEY` con la clave de Google AI Studio en el panel de Render.
 4. Verifica con `GET /api/health`.
 
 `out/` vive en el disco efímero del contenedor: se reinicia con cada despliegue, lo cual es aceptable porque el PRD no exige persistencia.
